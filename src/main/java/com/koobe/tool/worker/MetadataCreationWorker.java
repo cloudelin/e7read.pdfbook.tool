@@ -1,10 +1,14 @@
 package com.koobe.tool.worker;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.filefilter.TrueFileFilter;
@@ -15,7 +19,6 @@ import com.koobe.common.core.KoobeApplication;
 import com.koobe.common.data.KoobeDataService;
 import com.koobe.common.data.domain.Awss3file;
 import com.koobe.common.data.domain.Book;
-import com.koobe.common.data.domain.Page;
 import com.koobe.common.data.repository.BookRepository;
 import com.koobe.common.data.repository.PageRepository;
 import com.koobe.tool.enums.ConvertedResultsKeyEnum;
@@ -23,6 +26,8 @@ import com.koobe.tool.enums.ConvertedResultsKeyEnum;
 public class MetadataCreationWorker implements Callable<Map<String, Boolean>> {
 	
 	protected Logger log = LoggerFactory.getLogger(getClass());
+	
+	private ExecutorService executor = Executors.newFixedThreadPool(10);
 
 	private KoobeApplication koobeApplication;
 	private BookRepository bookRepository;
@@ -72,35 +77,39 @@ public class MetadataCreationWorker implements Callable<Map<String, Boolean>> {
 			boolean isFinishedUpload = true;
 			int index = 0;
 			
+			List<Callable<Boolean>> tasks = new ArrayList<Callable<Boolean>>();
+			
 			for (File filePage : files) {
 				
 				index++;
-				Page page = getOrCreatePage(book, index);
-				
+
 				File fileThumbnail = new File(pagesThumbnailFolderPath + File.separator + filePage.getName());
+				
 				String filePageKey = key_prefix + "/page_fullsize/" + filePage.getName();
 				String fileThumbnailKey = key_prefix + "/page_thumbnail/" + fileThumbnail.getName();
 				
-				Awss3file s3ImageFileDomain = null;
-				Awss3file s3ThumbnailFileDomain = null;
+				E7readS3FileUploadWorker fileUploadWorker = 
+						new E7readS3FileUploadWorker(koobeApplication, "image/jpeg", filePage, bucket, filePageKey);
 				
-				if (page.getImageFileUrl() == null) {
-					E7readS3FileUploadWorker fileUploadWorker = new E7readS3FileUploadWorker(koobeApplication, "image/jpeg", 
-							filePage, bucket, filePageKey);
-					s3ImageFileDomain = fileUploadWorker.call();
-				}
+				E7readS3FileUploadWorker thumbnailUploadWorker = 
+						new E7readS3FileUploadWorker(koobeApplication, "image/jpeg", fileThumbnail, bucket, fileThumbnailKey);
 				
-				if (page.getThumbnailFileUrl() == null) {
-					E7readS3FileUploadWorker fileUploadWorker = new E7readS3FileUploadWorker(koobeApplication, "image/jpeg", 
-							fileThumbnail, bucket, fileThumbnailKey);
-					s3ThumbnailFileDomain = fileUploadWorker.call();
-				}
+				E7readPageUploadWorker pageUploadWorker = 
+						new E7readPageUploadWorker(book, index, fileUploadWorker, thumbnailUploadWorker, pageRepository);
 				
-				if (s3ImageFileDomain != null && s3ThumbnailFileDomain != null) {
-					savePageInfo(page, s3ImageFileDomain, s3ThumbnailFileDomain);
-				} else {
-					isFinishedUpload = false;
+				tasks.add(pageUploadWorker);
+			}
+			
+			try {
+				List<Future<Boolean>> futures = executor.invokeAll(tasks);
+				
+				for (Future<Boolean> future : futures) {
+					if (!future.get()) {
+						isFinishedUpload = false;
+					}
 				}
+			} catch (Exception e) {
+				e.printStackTrace();
 			}
 			
 			// Upload PDF file
@@ -159,28 +168,5 @@ public class MetadataCreationWorker implements Callable<Map<String, Boolean>> {
 		book.setPdfFileUrl(awss3file.getResourceUrl());
 		bookRepository.save(book);
 		return book;
-	}
-	
-	private Page getOrCreatePage(Book book, Integer index) {
-		
-		Page page = null;
-		page = pageRepository.findByBookAndDataIndex(book, index);
-		
-		if (page == null) {
-			page = new Page();
-			page.setBook(book);
-			page.setDataIndex(index);
-			pageRepository.save(page);
-		}
-		return page;
-	}
-	
-	private Page savePageInfo(Page page, Awss3file awss3file1, Awss3file awss3file2) {
-		page.setAwss3file1(awss3file2);
-		page.setAwss3file2(awss3file1);
-		page.setImageFileUrl(awss3file1.getResourceUrl());
-		page.setThumbnailFileUrl(awss3file2.getResourceUrl());
-		pageRepository.save(page);
-		return page;
 	}
 }
