@@ -73,7 +73,7 @@ public class PdfConversionWorker implements Callable<Map<ConvertedResultsKeyEnum
 			}
 			
 			List<Callable<Boolean>> tasks = new ArrayList<Callable<Boolean>>();
-			maxProgress = pdfDocument.getPageCount() * 2;
+			maxProgress = pdfDocument.getPageCount() * 3;
 			
 			for (int i=1; i<=pdfDocument.getPageCount(); i++) {
 				String outputImagePath = fullsizePagesFolder.getAbsolutePath() + File.separator + "page_" + String.format("%04d", i) + ".jpg";
@@ -82,6 +82,10 @@ public class PdfConversionWorker implements Callable<Map<ConvertedResultsKeyEnum
 				PageRenderingWorker renderingThumbWorker = new PageRenderingWorker(pdfDocument, i, thumbnailZoom, outputThumbnailPath, this);
 				tasks.add(renderingWorker);
 				tasks.add(renderingThumbWorker);
+				
+				String outputTextPath = textFolder.getAbsolutePath() + File.separator + "page_" + String.format("%04d", i) + ".txt";
+				ExtractPageTextWorker extractPageTextWorker = new ExtractPageTextWorker(pdfDocument, i, outputTextPath, this);
+				tasks.add(extractPageTextWorker);
 			}
 			
 			boolean success = true;
@@ -90,18 +94,19 @@ public class PdfConversionWorker implements Callable<Map<ConvertedResultsKeyEnum
 			for (Future<Boolean> future : futures) {
 				if (!future.get()) {
 					success = false;
+					break;
 				}
 			}
 			
 			tasks = new ArrayList<Callable<Boolean>>();
 			
 			// render texts
-			for (int i=1; i<=pdfDocument.getPageCount(); i++) {
-				String outputTextPath = textFolder.getAbsolutePath() + File.separator + "page_" + String.format("%04d", i) + ".txt";
-				ExtractPageTextWorker extractPageTextWorker = new ExtractPageTextWorker(pdfDocument, i, outputTextPath);
-				tasks.add(extractPageTextWorker);
-			}
-			futures = executor.invokeAll(tasks);
+//			for (int i=1; i<=pdfDocument.getPageCount(); i++) {
+//				String outputTextPath = textFolder.getAbsolutePath() + File.separator + "page_" + String.format("%04d", i) + ".txt";
+//				ExtractPageTextWorker extractPageTextWorker = new ExtractPageTextWorker(pdfDocument, i, outputTextPath);
+//				tasks.add(extractPageTextWorker);
+//			}
+//			futures = executor.invokeAll(tasks);
 						
 			if (success) {
 				result = new HashMap<ConvertedResultsKeyEnum, String>();

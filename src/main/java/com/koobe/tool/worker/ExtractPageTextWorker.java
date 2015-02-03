@@ -21,10 +21,13 @@ public class ExtractPageTextWorker implements Callable<Boolean> {
 	private Integer pageIdx;
 	private String outputPath;
 	
-	public ExtractPageTextWorker(PdfDocument pdfDocument, Integer pageIdx, String outputPath) {
+	private PdfConversionWorker parent;
+	
+	public ExtractPageTextWorker(PdfDocument pdfDocument, Integer pageIdx, String outputPath, PdfConversionWorker parent) {
 		this.pdfDocument = pdfDocument;
 		this.pageIdx = pageIdx;
 		this.outputPath = outputPath;
+		this.parent = parent;
 	}
 
 	public Boolean call() {
@@ -56,6 +59,10 @@ public class ExtractPageTextWorker implements Callable<Boolean> {
 			if (page != null) {
 				page.dispose();
 			}
+		}
+		
+		if (this.parent != null) {
+			this.parent.increaseProgress();
 		}
 		
 		return result;
