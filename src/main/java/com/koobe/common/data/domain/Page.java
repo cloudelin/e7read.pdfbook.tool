@@ -27,6 +27,9 @@ public class Page implements Serializable {
 	private String thumbnailFileUrl;
 
 	private Long version;
+	
+	@Column(name="full_text")
+	private String fullText;
 
 	//bi-directional many-to-one association to Awss3file
 	@ManyToOne
@@ -85,6 +88,14 @@ public class Page implements Serializable {
 
 	public void setVersion(Long version) {
 		this.version = version;
+	}
+
+	public String getFullText() {
+		return fullText;
+	}
+
+	public void setFullText(String fullText) {
+		this.fullText = fullText;
 	}
 
 	public Awss3file getAwss3file1() {

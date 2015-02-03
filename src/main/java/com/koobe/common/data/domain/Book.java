@@ -36,6 +36,9 @@ public class Book implements Serializable {
 
 	private Long version;
 	
+	@Column(name="is_delete")
+	private Boolean isDelete;
+	
 	@ManyToOne
 	@JoinColumn(name="pdf_file_id")
 	private Awss3file pdfFile;
@@ -61,6 +64,7 @@ public class Book implements Serializable {
 	public Book() {
 		id = UUID.randomUUID().toString();
 		version = 0L;
+		isDelete = false;
 	}
 
 	public String getId() {
@@ -157,6 +161,14 @@ public class Book implements Serializable {
 
 	public void setVersion(Long version) {
 		this.version = version;
+	}
+
+	public Boolean getIsDelete() {
+		return isDelete;
+	}
+
+	public void setIsDelete(Boolean isDelete) {
+		this.isDelete = isDelete;
 	}
 
 	public Publisher getPublisher() {

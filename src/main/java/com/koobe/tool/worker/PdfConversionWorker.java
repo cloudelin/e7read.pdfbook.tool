@@ -9,6 +9,7 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
@@ -16,7 +17,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.jmupdf.pdf.PdfDocument;
+import com.koobe.common.data.domain.Page;
 import com.koobe.tool.enums.ConvertedResultsKeyEnum;
+import com.koobe.tool.ui.shell.KoobePDFBookToolShell;
 
 public class PdfConversionWorker implements Callable<Map<ConvertedResultsKeyEnum, String>> {
 	
@@ -28,11 +31,17 @@ public class PdfConversionWorker implements Callable<Map<ConvertedResultsKeyEnum
 	private Float zoom;
 	private Float thumbnailZoom;
 	
-	public PdfConversionWorker(File pdfFile, Float zoom, Float thumbnailZoom, int threadPool) {
+	private int maxProgress;
+	private AtomicInteger currProgress = new AtomicInteger(0);
+	
+	private KoobePDFBookToolShell shell;
+	
+	public PdfConversionWorker(File pdfFile, Float zoom, Float thumbnailZoom, int threadPool, KoobePDFBookToolShell shell) {
 		this.pdfFile = pdfFile;
 		this.zoom = zoom;
 		this.thumbnailZoom = thumbnailZoom;
 		executor = Executors.newFixedThreadPool(threadPool);
+		this.shell = shell;
 	}
 
 	public Map<ConvertedResultsKeyEnum, String> call() {
@@ -58,14 +67,19 @@ public class PdfConversionWorker implements Callable<Map<ConvertedResultsKeyEnum
 			if (!thumbnailPagesFolder.exists()) {
 				thumbnailPagesFolder.mkdir();
 			}
+			File textFolder = new File(tempFolder.getAbsolutePath() + File.separator + "page_text");
+			if (!textFolder.exists()) {
+				textFolder.mkdir();
+			}
 			
 			List<Callable<Boolean>> tasks = new ArrayList<Callable<Boolean>>();
+			maxProgress = pdfDocument.getPageCount() * 2;
 			
 			for (int i=1; i<=pdfDocument.getPageCount(); i++) {
 				String outputImagePath = fullsizePagesFolder.getAbsolutePath() + File.separator + "page_" + String.format("%04d", i) + ".jpg";
 				String outputThumbnailPath = thumbnailPagesFolder.getAbsolutePath() + File.separator + "page_" + String.format("%04d", i) + ".jpg";
-				PageRenderingWorker renderingWorker = new PageRenderingWorker(pdfDocument, i, zoom, outputImagePath);
-				PageRenderingWorker renderingThumbWorker = new PageRenderingWorker(pdfDocument, i, thumbnailZoom, outputThumbnailPath);
+				PageRenderingWorker renderingWorker = new PageRenderingWorker(pdfDocument, i, zoom, outputImagePath, this);
+				PageRenderingWorker renderingThumbWorker = new PageRenderingWorker(pdfDocument, i, thumbnailZoom, outputThumbnailPath, this);
 				tasks.add(renderingWorker);
 				tasks.add(renderingThumbWorker);
 			}
@@ -78,6 +92,16 @@ public class PdfConversionWorker implements Callable<Map<ConvertedResultsKeyEnum
 					success = false;
 				}
 			}
+			
+			tasks = new ArrayList<Callable<Boolean>>();
+			
+			// render texts
+			for (int i=1; i<=pdfDocument.getPageCount(); i++) {
+				String outputTextPath = textFolder.getAbsolutePath() + File.separator + "page_" + String.format("%04d", i) + ".txt";
+				ExtractPageTextWorker extractPageTextWorker = new ExtractPageTextWorker(pdfDocument, i, outputTextPath);
+				tasks.add(extractPageTextWorker);
+			}
+			futures = executor.invokeAll(tasks);
 						
 			if (success) {
 				result = new HashMap<ConvertedResultsKeyEnum, String>();
@@ -93,5 +117,18 @@ public class PdfConversionWorker implements Callable<Map<ConvertedResultsKeyEnum
 		}
 		
 		return result;
+	}
+	
+	public void increaseProgress() {
+		final int curr = currProgress.incrementAndGet();
+		if (this.shell != null) {
+			shell.executeOnUIThread(new Runnable() {
+				public void run() {
+					shell.getProgressBar().setMaximum(maxProgress);
+					shell.getProgressBar().setSelection(curr);
+					shell.getLblSrvStatus().setText("執行中 (" + curr + "/" + maxProgress + ")");
+				}
+			});
+		}
 	}
 }

@@ -11,7 +11,9 @@ import org.slf4j.LoggerFactory;
 
 import com.jmupdf.enums.ImageType;
 import com.jmupdf.interfaces.Page;
+import com.jmupdf.page.PageRect;
 import com.jmupdf.page.PageRenderer;
+import com.jmupdf.page.PageText;
 import com.jmupdf.pdf.PdfDocument;
 
 public class PageRenderingWorker implements Callable<Boolean> {
@@ -23,12 +25,14 @@ public class PageRenderingWorker implements Callable<Boolean> {
 	private Integer pageIdx;
 	private String outputPath;
 	private Float zoom;
+	private PdfConversionWorker parent;
 	
-	public PageRenderingWorker(PdfDocument pdfDocument, Integer pageIdx, Float zoom, String outputPath) {
+	public PageRenderingWorker(PdfDocument pdfDocument, Integer pageIdx, Float zoom, String outputPath, PdfConversionWorker parent) {
 		this.pdfDocument = pdfDocument;
 		this.pageIdx = pageIdx;
 		this.outputPath = outputPath;
 		this.zoom = zoom;
+		this.parent = parent;
 	}
 	
 	public Boolean call() {
@@ -41,9 +45,11 @@ public class PageRenderingWorker implements Callable<Boolean> {
 			PageRenderer pageRenderer = null;
 			try {
 				this.page = pdfDocument.getPage(pageIdx);
+				
 				log.info("Rendering page to {}", outputPath);
 				pageRenderer = new PageRenderer(page, zoom, 0, ImageType.IMAGE_TYPE_RGB);
 				pageRenderer.run();
+				
 				BufferedImage bim = pageRenderer.getImage();
 				ImageIO.write(bim, "jpg", outputFile);
 			} catch (Exception e) {
@@ -57,6 +63,10 @@ public class PageRenderingWorker implements Callable<Boolean> {
 			}
 		} else {
 			log.info("File {} has already exists, skipped", outputPath);
+		}
+		
+		if (this.parent != null) {
+			this.parent.increaseProgress();
 		}
 		
 		return result;

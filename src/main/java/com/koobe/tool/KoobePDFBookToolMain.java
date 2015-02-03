@@ -29,11 +29,11 @@ public class KoobePDFBookToolMain {
 	 */
 	public static void main(String[] args) {
 		
-		PdfBatchConversionWorker conversionWorker = new PdfBatchConversionWorker(pdfFolderPath, 3F, 0.4F, 4);
+		PdfBatchConversionWorker conversionWorker = new PdfBatchConversionWorker(pdfFolderPath, 3F, 0.4F, 4, null);
 		List<Map<ConvertedResultsKeyEnum, String>> results = conversionWorker.call();
 		log.info(results.toString());
 		
-		MetadataCreationWorker creationWorker = new MetadataCreationWorker(results, koobeApplication, bookBucket);
+		MetadataCreationWorker creationWorker = new MetadataCreationWorker(results, koobeApplication, bookBucket, 10, null);
 		Map<String, Boolean> resultsMap = creationWorker.call();
 		log.info(resultsMap.toString());
 		

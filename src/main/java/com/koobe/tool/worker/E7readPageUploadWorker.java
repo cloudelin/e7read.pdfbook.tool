@@ -1,6 +1,10 @@
 package com.koobe.tool.worker;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.concurrent.Callable;
+
+import org.apache.commons.io.FileUtils;
 
 import com.koobe.common.data.domain.Awss3file;
 import com.koobe.common.data.domain.Book;
@@ -15,17 +19,23 @@ public class E7readPageUploadWorker implements Callable<Boolean> {
 	private Integer pageIdx;
 	private E7readS3FileUploadWorker imageUploadWorker;
 	private E7readS3FileUploadWorker thumbnailUploadWorker;
+	private String pageTextFilePath;
+	
+	private MetadataCreationWorker parent;
 	
 	public E7readPageUploadWorker(Book book, Integer pageIdx, 
 			E7readS3FileUploadWorker imageUploadWorker,
 			E7readS3FileUploadWorker thumbnailUploadWorke,
-			PageRepository pageRepository) {
+			PageRepository pageRepository,
+			String pageTextFilePath, MetadataCreationWorker parent) {
 		
 		this.book = book;
 		this.pageIdx = pageIdx;
 		this.imageUploadWorker = imageUploadWorker;
 		this.thumbnailUploadWorker = thumbnailUploadWorke;
 		this.pageRepository = pageRepository;
+		this.pageTextFilePath = pageTextFilePath;
+		this.parent = parent;
 	}
 	
 	public Boolean call() {
@@ -34,11 +44,27 @@ public class E7readPageUploadWorker implements Callable<Boolean> {
 		Page page = getOrCreatePage(book, pageIdx);
 		Awss3file s3ImageFileDomain = imageUploadWorker.call();
 		Awss3file s3ThumbnailFileDomain = thumbnailUploadWorker.call();
+		
+		File textFile = new File(pageTextFilePath);
+		String text = null;
+		try {
+			text = FileUtils.readFileToString(textFile);
+			if (text == null || text.trim().equals("")) {
+				text = null;
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		
 		if (s3ImageFileDomain != null && s3ThumbnailFileDomain != null) {
+			page.setFullText(text);
 			savePageInfo(page, s3ImageFileDomain, s3ThumbnailFileDomain);
 		} else {
 			result = false;
 		}
+		
+		this.parent.increaseProgress();
+		
 		return result;
 	}
 	
