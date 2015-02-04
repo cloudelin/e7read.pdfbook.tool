@@ -49,36 +49,50 @@ public class PdfBatchConversionWorker implements Callable<List<Map<ConvertedResu
 		for (final File file : files) {
 			if (file.isFile() && FilenameUtils.getExtension(file.getName()).toLowerCase().equals("pdf")) {
 				
-				if (shell != null) {
-					shell.executeOnUIThread(new Runnable() {
-						public void run() {
-							shell.getListFileResult().add("執行檔案轉換：" + file.getName());
-						}
-					});
-				}
+				File finishedFile = new File(file.getAbsolutePath() + ".finished");
 				
-				long start = System.currentTimeMillis();
-				PdfConversionWorker conversionWorker = new PdfConversionWorker(file, zoom, thumbnailZoom, threadPool, shell);
-				Map<ConvertedResultsKeyEnum, String> result = conversionWorker.call();
-				final double elapsed = (System.currentTimeMillis() - start) / 1000D;
-				
-				if (result != null) {
-					resultsMapList.add(result);
+				if (finishedFile.exists()) {
 					
 					if (shell != null) {
 						shell.executeOnUIThread(new Runnable() {
 							public void run() {
-								shell.getListFileResult().add("檔案轉換成功：" + file.getName() + " (" + elapsed + "s)");
+								shell.getListFileResult().add("標示已完成，略過執行：" + file.getName());
 							}
 						});
 					}
 				} else {
+					
 					if (shell != null) {
 						shell.executeOnUIThread(new Runnable() {
 							public void run() {
-								shell.getListFileResult().add("檔案轉換失敗：" + file.getName() + " (" + elapsed + "s)");
+								shell.getListFileResult().add("執行檔案轉換：" + file.getName());
 							}
 						});
+					}
+					
+					long start = System.currentTimeMillis();
+					PdfConversionWorker conversionWorker = new PdfConversionWorker(file, zoom, thumbnailZoom, threadPool, shell);
+					Map<ConvertedResultsKeyEnum, String> result = conversionWorker.call();
+					final double elapsed = (System.currentTimeMillis() - start) / 1000D;
+					
+					if (result != null) {
+						resultsMapList.add(result);
+						
+						if (shell != null) {
+							shell.executeOnUIThread(new Runnable() {
+								public void run() {
+									shell.getListFileResult().add("檔案轉換成功：" + file.getName() + " (" + elapsed + "s)");
+								}
+							});
+						}
+					} else {
+						if (shell != null) {
+							shell.executeOnUIThread(new Runnable() {
+								public void run() {
+									shell.getListFileResult().add("檔案轉換失敗：" + file.getName() + " (" + elapsed + "s)");
+								}
+							});
+						}
 					}
 				}
 			}

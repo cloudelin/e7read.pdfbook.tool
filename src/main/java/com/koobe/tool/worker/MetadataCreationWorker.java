@@ -1,6 +1,7 @@
 package com.koobe.tool.worker;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -153,6 +154,13 @@ public class MetadataCreationWorker implements Callable<Map<String, Boolean>> {
 							shell.getListFileResult().add("上傳檔案完成：" + pdfFile.getName() + " (" + elapsed + "s)");
 						}
 					});
+				}
+				
+				try {
+					File finishedFile = new File(pdfFilePath + ".finished");
+					FileUtils.writeStringToFile(finishedFile, "");
+				} catch (IOException e) {
+					e.printStackTrace();
 				}
 			} else {
 				results.put(pagesFolderPath, false);
