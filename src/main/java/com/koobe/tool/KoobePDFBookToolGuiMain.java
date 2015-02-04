@@ -16,7 +16,6 @@ public class KoobePDFBookToolGuiMain {
 	static Display display;
 	
 	static {
-		koobeApplication = KoobeApplication.getInstance();
 		display = Display.getDefault();
 	}
 
@@ -25,8 +24,20 @@ public class KoobePDFBookToolGuiMain {
 	 */
 	public static void main(String[] args) {
 
-		KoobePDFBookToolShell shell = KoobePDFBookToolShell.createShell();
+		final KoobePDFBookToolShell shell = KoobePDFBookToolShell.createShell();
 		shell.open();
+		
+		new Thread(new Runnable() {
+			public void run() {
+				koobeApplication = KoobeApplication.getInstance();
+				display.syncExec(new Runnable() {
+					public void run() {
+						shell.getBtnStart().setEnabled(true);
+						shell.getLblSrvStatus().setText("就緒");
+					}
+				});
+			}
+		}).start();
 		
 		while (!shell.isDisposed()) {
 			if (!display.readAndDispatch())

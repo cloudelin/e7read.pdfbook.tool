@@ -170,7 +170,7 @@ public class KoobePDFBookToolShell extends Shell {
 		
 		lblSrvStatus = new Label(tCompositeForm, SWT.NONE);
 		lblSrvStatus.setAlignment(SWT.RIGHT);
-		lblSrvStatus.setText("執行狀態");
+		lblSrvStatus.setText("程式正在初始化，請稍候...");
 		lblSrvStatus.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 2, 1));
 		
 		Composite tCompositeSrvCtrlButton = new Composite(tCompositeForm, SWT.NONE);
@@ -184,7 +184,7 @@ public class KoobePDFBookToolShell extends Shell {
 		btnStart = new Button(tCompositeSrvCtrlButton, SWT.NONE);		
 		btnStart.setLayoutData(new RowData(75, -1));
 		btnStart.setText("啟動");
-				
+		btnStart.setEnabled(false);
 		
 		Composite tButtonComposite = new Composite(tMainComposite, SWT.NONE);
 		GridLayout gl_tButtonComposite = new GridLayout(1, false);
@@ -293,6 +293,10 @@ public class KoobePDFBookToolShell extends Shell {
 
 	public Label getLblSrvStatus() {
 		return lblSrvStatus;
+	}
+
+	public Button getBtnStart() {
+		return btnStart;
 	}
 
 
