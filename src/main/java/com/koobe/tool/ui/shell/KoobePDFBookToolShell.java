@@ -84,12 +84,22 @@ public class KoobePDFBookToolShell extends Shell {
 		
 		TabFolder tPropertiesTabFolder = new TabFolder(tCompositeTabFolder, SWT.NONE);
 		
-		TabItem tTabGeneral = new TabItem(tPropertiesTabFolder, SWT.NONE);
-		tTabGeneral.setText("資料夾批次轉檔");		
-		
 		Composite tGeneralComposite = new Composite(tPropertiesTabFolder, SWT.NONE);
-		tTabGeneral.setControl(tGeneralComposite);
 		tGeneralComposite.setLayout(new GridLayout(1, false));
+		
+		Composite tSettingComposite = new Composite(tPropertiesTabFolder, SWT.NONE);
+		tSettingComposite.setLayout(new GridLayout(1, false));
+		
+		TabItem tTabGeneral = new TabItem(tPropertiesTabFolder, SWT.NONE);
+		tTabGeneral.setText("批次轉檔");		
+		tTabGeneral.setControl(tGeneralComposite);
+		
+		TabItem tTabSetting = new TabItem(tPropertiesTabFolder, SWT.NONE);
+		tTabSetting.setText("設定");		
+		tTabSetting.setControl(tSettingComposite);
+		
+		addSettingTabLayout(tSettingComposite);
+		
 		
 		Composite tCompositeForm = new Composite(tGeneralComposite, SWT.NONE);
 		tCompositeForm.setLayoutData(new GridData(GridData.FILL_BOTH));
@@ -102,34 +112,7 @@ public class KoobePDFBookToolShell extends Shell {
 		btnOpenFileDialog = new Button(tCompositeForm, SWT.NONE);
 		btnOpenFileDialog.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
 		btnOpenFileDialog.setText("選擇資料夾...");
-
-		Label lblConversionImageSize = new Label(tCompositeForm, SWT.NONE);
-		lblConversionImageSize.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
-		lblConversionImageSize.setText("圖片比例:");
-		textConversionImageSize = new Text(tCompositeForm, SWT.BORDER);
-		textConversionImageSize.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
-		textConversionImageSize.setText("3");
 		
-		Label lblConversionThumbnailSize = new Label(tCompositeForm, SWT.NONE);
-		lblConversionThumbnailSize.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
-		lblConversionThumbnailSize.setText("縮圖比例:");
-		textConversionThumbnailSize = new Text(tCompositeForm, SWT.BORDER);
-		textConversionThumbnailSize.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
-		textConversionThumbnailSize.setText("0.4");
-		
-		Label lblConversionThread = new Label(tCompositeForm, SWT.NONE);
-		lblConversionThread.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
-		lblConversionThread.setText("轉檔執行緒:");
-		textConversionThread = new Text(tCompositeForm, SWT.BORDER);
-		textConversionThread.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
-		textConversionThread.setText("4");
-		
-		Label lblUploadingThread = new Label(tCompositeForm, SWT.NONE);
-		lblUploadingThread.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
-		lblUploadingThread.setText("上傳執行緒:");
-		textUploadingThread = new Text(tCompositeForm, SWT.BORDER);
-		textUploadingThread.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
-		textUploadingThread.setText("10");
 		
 		Label lblBlank1 = new Label(tCompositeForm, SWT.NONE);
 		lblBlank1.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false, 2, 1));
@@ -151,8 +134,6 @@ public class KoobePDFBookToolShell extends Shell {
 		listFileResult = new List(tCompositeResult, SWT.BORDER | SWT.V_SCROLL);
 		listFileResult.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
 
-//		listFileResult.setItems(new String[]{"a", "b", "c", "a", "b", "c", "a", "b", "c", "a", "b", "c"});
-		
 		
 		Composite tCompositeProgress = new Composite(tCompositeForm, SWT.NONE);
 		GridLayout gl_tCompositeProgress = new GridLayout(1, false);
@@ -164,9 +145,6 @@ public class KoobePDFBookToolShell extends Shell {
 		progressBar = new ProgressBar(tCompositeProgress, SWT.SMOOTH);
 		progressBar.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
 
-		
-//		Label lblServiceStatus = new Label(tCompositeForm, SWT.NONE);
-//		lblServiceStatus.setText("狀態:");
 		
 		lblSrvStatus = new Label(tCompositeForm, SWT.NONE);
 		lblSrvStatus.setAlignment(SWT.RIGHT);
@@ -217,6 +195,41 @@ public class KoobePDFBookToolShell extends Shell {
 		 */
 		createContents();
 		addListener();
+	}
+	
+	protected void addSettingTabLayout(Composite settingComposite) {
+		
+		Composite tCompositeForm = new Composite(settingComposite, SWT.NONE);
+		tCompositeForm.setLayoutData(new GridData(GridData.FILL_BOTH));
+		tCompositeForm.setLayout(new GridLayout(2, false));
+		
+		Label lblConversionImageSize = new Label(tCompositeForm, SWT.NONE);
+		lblConversionImageSize.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
+		lblConversionImageSize.setText("圖片比例:");
+		textConversionImageSize = new Text(tCompositeForm, SWT.BORDER);
+		textConversionImageSize.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		textConversionImageSize.setText("3");
+		
+		Label lblConversionThumbnailSize = new Label(tCompositeForm, SWT.NONE);
+		lblConversionThumbnailSize.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
+		lblConversionThumbnailSize.setText("縮圖比例:");
+		textConversionThumbnailSize = new Text(tCompositeForm, SWT.BORDER);
+		textConversionThumbnailSize.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		textConversionThumbnailSize.setText("0.4");
+		
+		Label lblConversionThread = new Label(tCompositeForm, SWT.NONE);
+		lblConversionThread.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
+		lblConversionThread.setText("轉檔執行緒:");
+		textConversionThread = new Text(tCompositeForm, SWT.BORDER);
+		textConversionThread.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		textConversionThread.setText("4");
+		
+		Label lblUploadingThread = new Label(tCompositeForm, SWT.NONE);
+		lblUploadingThread.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
+		lblUploadingThread.setText("上傳執行緒:");
+		textUploadingThread = new Text(tCompositeForm, SWT.BORDER);
+		textUploadingThread.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		textUploadingThread.setText("10");
 	}
 		
 	protected void addListener() {

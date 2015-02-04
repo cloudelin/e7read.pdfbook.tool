@@ -5,6 +5,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.koobe.common.core.KoobeApplication;
+import com.koobe.common.data.KoobeDataService;
+import com.koobe.common.data.repository.BookRepository;
 import com.koobe.tool.ui.shell.KoobePDFBookToolShell;
 
 public class KoobePDFBookToolGuiMain {
@@ -29,13 +31,25 @@ public class KoobePDFBookToolGuiMain {
 		
 		new Thread(new Runnable() {
 			public void run() {
-				koobeApplication = KoobeApplication.getInstance();
-				display.syncExec(new Runnable() {
-					public void run() {
-						shell.getBtnStart().setEnabled(true);
-						shell.getLblSrvStatus().setText("就緒");
-					}
-				});
+				try {
+					koobeApplication = KoobeApplication.getInstance();
+					KoobeDataService dataService = (KoobeDataService) koobeApplication.getService(KoobeDataService.class);
+					BookRepository bookRepository = (BookRepository) dataService.getRepository(BookRepository.class);
+					bookRepository.findByOriginalFileName("");
+					display.syncExec(new Runnable() {
+						public void run() {
+							shell.getBtnStart().setEnabled(true);
+							shell.getLblSrvStatus().setText("就緒");
+						}
+					});
+				} catch (Exception e) {
+					e.printStackTrace();
+					display.syncExec(new Runnable() {
+						public void run() {
+							shell.getLblSrvStatus().setText("系統參數錯誤，請聯絡系統管理員");
+						}
+					});
+				}
 			}
 		}).start();
 		
