@@ -214,15 +214,10 @@ public class MetadataCreationWorker implements Callable<Map<String, Boolean>> {
 			book.setOriginalFileName(fileName);
 			book.setUnedited(true);
 			book.setFinishedUpload(false);
+			book.setIsChecked(false);
+			book.setIsDelete(false);
 		}
 				
-		bookRepository.save(book);
-		return book;
-	}
-	
-	private Book saveBookPdfFileInfo(Book book, Awss3file awss3file) {
-		book.setPdfFile(awss3file);
-		book.setPdfFileUrl(awss3file.getResourceUrl());
 		bookRepository.save(book);
 		return book;
 	}

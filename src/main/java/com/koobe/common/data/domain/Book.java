@@ -36,6 +36,9 @@ public class Book implements Serializable {
 
 	private Long version;
 	
+	@Column(name="is_checked")
+	private Boolean isChecked;
+	
 	@Column(name="is_delete")
 	private Boolean isDelete;
 	
@@ -43,8 +46,10 @@ public class Book implements Serializable {
 	@JoinColumn(name="pdf_file_id")
 	private Awss3file pdfFile;
 	
-	@Column(name="pdf_file_url")
-	private String pdfFileUrl;
+	private String bucket;
+	
+	@Column(name="pdf_file_key")
+	private String pdfFileKey;
 	
 	@Column(name="original_file_name")
 	private String originalFileName;
@@ -130,15 +135,7 @@ public class Book implements Serializable {
 	public void setPdfFile(Awss3file pdfFile) {
 		this.pdfFile = pdfFile;
 	}
-
-	public String getPdfFileUrl() {
-		return pdfFileUrl;
-	}
-
-	public void setPdfFileUrl(String pdfFileUrl) {
-		this.pdfFileUrl = pdfFileUrl;
-	}
-
+	
 	public String getOriginalFileName() {
 		return originalFileName;
 	}
@@ -169,6 +166,31 @@ public class Book implements Serializable {
 
 	public void setIsDelete(Boolean isDelete) {
 		this.isDelete = isDelete;
+	}
+
+	
+	public Boolean getIsChecked() {
+		return isChecked;
+	}
+
+	public void setIsChecked(Boolean isChecked) {
+		this.isChecked = isChecked;
+	}
+
+	public String getBucket() {
+		return bucket;
+	}
+
+	public void setBucket(String bucket) {
+		this.bucket = bucket;
+	}
+
+	public String getPdfFileKey() {
+		return pdfFileKey;
+	}
+
+	public void setPdfFileKey(String pdfFileKey) {
+		this.pdfFileKey = pdfFileKey;
 	}
 
 	public Publisher getPublisher() {

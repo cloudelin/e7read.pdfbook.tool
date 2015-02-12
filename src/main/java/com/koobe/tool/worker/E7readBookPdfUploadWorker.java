@@ -54,7 +54,8 @@ public class E7readBookPdfUploadWorker implements Callable<Boolean> {
 	
 	protected Book saveBookPdfFileInfo(Book book, Awss3file awss3file) {
 		book.setPdfFile(awss3file);
-		book.setPdfFileUrl(awss3file.getResourceUrl());
+		book.setBucket(awss3file.getBucket());
+		book.setPdfFileKey(awss3file.getObjectKey());
 		bookRepository.save(book);
 		return book;
 	}

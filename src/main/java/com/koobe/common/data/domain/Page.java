@@ -19,12 +19,15 @@ public class Page implements Serializable {
 
 	@Column(name="data_index")
 	private Integer dataIndex;
+	
+	@Column(name="bucket")
+	private String bucket;
 
-	@Column(name="image_file_url")
-	private String imageFileUrl;
+	@Column(name="image_key")
+	private String imageKey;
 
-	@Column(name="thumbnail_file_url")
-	private String thumbnailFileUrl;
+	@Column(name="thumbnail_key")
+	private String thumbnailKey;
 
 	private Long version;
 	
@@ -65,21 +68,29 @@ public class Page implements Serializable {
 	public void setDataIndex(Integer dataIndex) {
 		this.dataIndex = dataIndex;
 	}
-
-	public String getImageFileUrl() {
-		return this.imageFileUrl;
+	
+	public String getBucket() {
+		return bucket;
 	}
 
-	public void setImageFileUrl(String imageFileUrl) {
-		this.imageFileUrl = imageFileUrl;
+	public void setBucket(String bucket) {
+		this.bucket = bucket;
 	}
 
-	public String getThumbnailFileUrl() {
-		return this.thumbnailFileUrl;
+	public String getImageKey() {
+		return imageKey;
 	}
 
-	public void setThumbnailFileUrl(String thumbnailFileUrl) {
-		this.thumbnailFileUrl = thumbnailFileUrl;
+	public void setImageKey(String imageKey) {
+		this.imageKey = imageKey;
+	}
+
+	public String getThumbnailKey() {
+		return thumbnailKey;
+	}
+
+	public void setThumbnailKey(String thumbnailKey) {
+		this.thumbnailKey = thumbnailKey;
 	}
 
 	public Long getVersion() {

@@ -38,7 +38,8 @@ public class FileUploadingWorker implements Callable<Boolean> {
 		try {
 			log.info("Uploading file {}", file.getAbsolutePath());
 			fis = new FileInputStream(file);
-			storage.putObjectPublicRead(bucket, objectKey, fis, file.length());
+			storage.putObject(bucket, objectKey, fis, file.length());
+//			storage.putObjectPublicRead(bucket, objectKey, fis, file.length());
 			log.info("Success to upload file {}", file.getAbsolutePath());
 			result = true;
 		} catch (Throwable e) {

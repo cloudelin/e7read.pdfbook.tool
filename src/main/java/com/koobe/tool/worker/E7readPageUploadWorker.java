@@ -83,8 +83,9 @@ public class E7readPageUploadWorker implements Callable<Boolean> {
 	private Page savePageInfo(Page page, Awss3file awss3file1, Awss3file awss3file2) {
 		page.setAwss3file1(awss3file2);
 		page.setAwss3file2(awss3file1);
-		page.setImageFileUrl(awss3file1.getResourceUrl());
-		page.setThumbnailFileUrl(awss3file2.getResourceUrl());
+		page.setBucket(awss3file2.getBucket());
+		page.setImageKey(awss3file1.getObjectKey());
+		page.setThumbnailKey(awss3file2.getObjectKey());
 		pageRepository.save(page);
 		return page;
 	}
